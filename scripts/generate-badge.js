@@ -59,7 +59,12 @@ async function main() {
       throw new Error('Malformed coverage report')
     }
 
-    const coverage = report.total.statements.pct
+    const coveragePct = report.total.statements.pct
+    if (typeof coveragePct !== 'number' || isNaN(coveragePct)) {
+      throw new Error('Coverage percentage is not a valid number')
+    }
+
+    const coverage = Math.floor(coveragePct)
     const svg = generateSVG(coverage)
 
     await writeFile(outputPath, svg, 'utf8')
