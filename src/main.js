@@ -10,18 +10,31 @@ export async function run() {
   try {
     const ms = core.getInput('milliseconds')
 
+    // Validate input early to fail fast
+    const parsedMs = parseInt(ms, 10)
+    if (!ms || isNaN(parsedMs)) {
+      throw new Error('milliseconds input must be a valid number')
+    }
+
     // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
-    core.debug(`Waiting ${ms} milliseconds ...`)
+    core.debug(`Waiting ${parsedMs} milliseconds ...`)
 
     // Log the current timestamp, wait, then log the new timestamp
     core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
+    await wait(parsedMs)
+
+    // Cache the end time to avoid creating multiple Date objects
+    const endTime = new Date().toTimeString()
+    core.debug(endTime)
 
     // Set outputs for other workflow steps to use
-    core.setOutput('time', new Date().toTimeString())
+    core.setOutput('time', endTime)
   } catch (error) {
     // Fail the workflow run if an error occurs
-    if (error instanceof Error) core.setFailed(error.message)
+    if (error instanceof Error) {
+      core.setFailed(error.message)
+    } else {
+      core.setFailed(String(error))
+    }
   }
 }

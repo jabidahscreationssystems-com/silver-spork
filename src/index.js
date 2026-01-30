@@ -5,4 +5,7 @@
 import { run } from './main.js'
 
 /* istanbul ignore next */
-run()
+run().catch((error) => {
+  console.error('Unhandled error in action:', error)
+  process.exit(1)
+})
