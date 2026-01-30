@@ -27260,9 +27260,15 @@ var coreExports = requireCore();
  * @returns {Promise<string>} Resolves with 'done!' after the wait is over.
  */
 async function wait(milliseconds) {
-  return new Promise((resolve) => {
-    if (isNaN(milliseconds)) throw new Error('milliseconds is not a number')
+  if (typeof milliseconds !== 'number' || isNaN(milliseconds)) {
+    throw new Error('milliseconds is not a number')
+  }
 
+  if (milliseconds < 0) {
+    throw new Error('milliseconds cannot be negative')
+  }
+
+  return new Promise((resolve) => {
     setTimeout(() => resolve('done!'), milliseconds);
   })
 }
@@ -27276,19 +27282,36 @@ async function run() {
   try {
     const ms = coreExports.getInput('milliseconds');
 
+    // Validate input early to fail fast
+    const parsedMs = parseInt(ms, 10);
+    if (ms === '' || isNaN(parsedMs)) {
+      throw new Error('milliseconds input must be a valid number')
+    }
+
+    if (parsedMs < 0) {
+      throw new Error('milliseconds cannot be negative')
+    }
+
     // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
-    coreExports.debug(`Waiting ${ms} milliseconds ...`);
+    coreExports.debug(`Waiting ${parsedMs} milliseconds ...`);
 
     // Log the current timestamp, wait, then log the new timestamp
     coreExports.debug(new Date().toTimeString());
-    await wait(parseInt(ms, 10));
-    coreExports.debug(new Date().toTimeString());
+    await wait(parsedMs);
+
+    // Cache the end time to avoid creating multiple Date objects
+    const endTime = new Date().toTimeString();
+    coreExports.debug(endTime);
 
     // Set outputs for other workflow steps to use
-    coreExports.setOutput('time', new Date().toTimeString());
+    coreExports.setOutput('time', endTime);
   } catch (error) {
     // Fail the workflow run if an error occurs
-    if (error instanceof Error) coreExports.setFailed(error.message);
+    if (error instanceof Error) {
+      coreExports.setFailed(error.message);
+    } else {
+      coreExports.setFailed(String(error));
+    }
   }
 }
 
@@ -27298,5 +27321,8 @@ async function run() {
  */
 
 /* istanbul ignore next */
-run();
+run().catch((error) => {
+  console.error('Unhandled error in action:', error);
+  process.exit(1);
+});
 //# sourceMappingURL=index.js.map

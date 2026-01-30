@@ -46,17 +46,51 @@ describe('main.js', () => {
     // Clear the getInput mock and return an invalid value.
     core.getInput.mockClear().mockReturnValueOnce('this is not a number')
 
-    // Clear the wait mock and return a rejected promise.
-    wait
-      .mockClear()
-      .mockRejectedValueOnce(new Error('milliseconds is not a number'))
+    await run()
+
+    // Verify that the action was marked as failed with the new validation message.
+    expect(core.setFailed).toHaveBeenNthCalledWith(
+      1,
+      'milliseconds input must be a valid number'
+    )
+  })
+
+  it('Handles non-Error exceptions', async () => {
+    // Clear the wait mock and throw a non-Error exception.
+    wait.mockClear().mockRejectedValueOnce('string error')
+
+    await run()
+
+    // Verify that the non-Error exception is converted to string.
+    expect(core.setFailed).toHaveBeenNthCalledWith(1, 'string error')
+  })
+
+  it('Accepts zero milliseconds as valid input', async () => {
+    // Clear the getInput mock and return "0".
+    core.getInput.mockClear().mockReturnValueOnce('0')
+
+    await run()
+
+    // Verify that wait was called with 0.
+    expect(wait).toHaveBeenCalledWith(0)
+
+    // Verify the action succeeded with time output.
+    expect(core.setOutput).toHaveBeenCalledWith(
+      'time',
+      expect.stringMatching(/^\d{2}:\d{2}:\d{2}/)
+    )
+  })
+
+  it('Rejects negative milliseconds', async () => {
+    // Clear the getInput mock and return a negative number.
+    core.getInput.mockClear().mockReturnValueOnce('-100')
 
     await run()
 
     // Verify that the action was marked as failed.
     expect(core.setFailed).toHaveBeenNthCalledWith(
       1,
-      'milliseconds is not a number'
+      'milliseconds cannot be negative'
     )
   })
 })
