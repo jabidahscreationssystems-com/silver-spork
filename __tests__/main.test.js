@@ -80,4 +80,17 @@ describe('main.js', () => {
       expect.stringMatching(/^\d{2}:\d{2}:\d{2}/)
     )
   })
+
+  it('Rejects negative milliseconds', async () => {
+    // Clear the getInput mock and return a negative number.
+    core.getInput.mockClear().mockReturnValueOnce('-100')
+
+    await run()
+
+    // Verify that the action was marked as failed.
+    expect(core.setFailed).toHaveBeenNthCalledWith(
+      1,
+      'milliseconds cannot be negative'
+    )
+  })
 })

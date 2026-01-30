@@ -12,8 +12,12 @@ export async function run() {
 
     // Validate input early to fail fast
     const parsedMs = parseInt(ms, 10)
-    if (ms === '' || ms.trim() === '' || isNaN(parsedMs)) {
+    if (ms === '' || isNaN(parsedMs)) {
       throw new Error('milliseconds input must be a valid number')
+    }
+
+    if (parsedMs < 0) {
+      throw new Error('milliseconds cannot be negative')
     }
 
     // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
