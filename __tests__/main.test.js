@@ -64,4 +64,20 @@ describe('main.js', () => {
     // Verify that the non-Error exception is converted to string.
     expect(core.setFailed).toHaveBeenNthCalledWith(1, 'string error')
   })
+
+  it('Accepts zero milliseconds as valid input', async () => {
+    // Clear the getInput mock and return "0".
+    core.getInput.mockClear().mockReturnValueOnce('0')
+
+    await run()
+
+    // Verify that wait was called with 0.
+    expect(wait).toHaveBeenCalledWith(0)
+
+    // Verify the action succeeded with time output.
+    expect(core.setOutput).toHaveBeenCalledWith(
+      'time',
+      expect.stringMatching(/^\d{2}:\d{2}:\d{2}/)
+    )
+  })
 })

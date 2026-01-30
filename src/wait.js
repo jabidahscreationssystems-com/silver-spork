@@ -9,6 +9,10 @@ export async function wait(milliseconds) {
     throw new Error('milliseconds is not a number')
   }
 
+  if (milliseconds < 0) {
+    throw new Error('milliseconds cannot be negative')
+  }
+
   return new Promise((resolve) => {
     setTimeout(() => resolve('done!'), milliseconds)
   })

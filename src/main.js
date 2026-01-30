@@ -12,7 +12,7 @@ export async function run() {
 
     // Validate input early to fail fast
     const parsedMs = parseInt(ms, 10)
-    if (!ms || isNaN(parsedMs)) {
+    if (ms === '' || ms.trim() === '' || isNaN(parsedMs)) {
       throw new Error('milliseconds input must be a valid number')
     }
 
